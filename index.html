@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Three.js 3D Scene - Shape, Zoom & Color Control</title>
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: white;
+            font-family: Arial;
+        }
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+        }
+        label { display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="ui">
+    <label>
+        Zoom:
+        <input type="range" id="zoomSlider" min="5" max="50" value="20">
+    </label>
+
+    <label>
+        Color:
+        <input type="color" id="colorPicker" value="#00ff00">
+    </label>
+
+    <label>
+        Shape:
+        <select id="shapeSelector">
+            <option value="cube">Cube</option>
+            <option value="sphere">Sphere</option>
+        </select>
+    </label>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+
+// ------------------------------------------------
+// SETUP SCENE, CAMERA, RENDERER
+// ------------------------------------------------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(
+    75, window.innerWidth/window.innerHeight, 0.1, 1000
+);
+camera.position.z = 20;
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// ------------------------------------------------
+// DEFAULT OBJECT (CUBE)
+// ------------------------------------------------
+let object;
+function createShape(type) {
+    if (object) scene.remove(object);
+
+    let geometry;
+    if (type === "sphere") {
+        geometry = new THREE.SphereGeometry(5, 32, 32);
+    } else {
+        geometry = new THREE.BoxGeometry(8, 8, 8);
+    }
+
+    const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    object = new THREE.Mesh(geometry, material);
+    scene.add(object);
+}
+createShape("cube");
+
+// ------------------------------------------------
+// LIGHT
+// ------------------------------------------------
+const light = new THREE.PointLight(0xffffff, 1);
+light.position.set(10, 15, 10);
+scene.add(light);
+
+// ------------------------------------------------
+// UI CONTROLS
+// ------------------------------------------------
+
+// ZOOM CONTROL
+document.getElementById("zoomSlider").addEventListener("input", (e) => {
+    camera.position.z = e.target.value;
+});
+
+// COLOR CONTROL
+document.getElementById("colorPicker").addEventListener("input", (e) => {
+    object.material.color.set(e.target.value);
+});
+
+// SHAPE CHANGE
+document.getElementById("shapeSelector").addEventListener("change", (e) => {
+    createShape(e.target.value);
+});
+
+// ------------------------------------------------
+// ANIMATION LOOP
+// ------------------------------------------------
+function animate() {
+    requestAnimationFrame(animate);
+
+    object.rotation.x += 0.01;
+    object.rotation.y += 0.01;
+
+    renderer.render(scene, camera);
+}
+animate();
+
+// Handle window resize
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+</script>
+
+</body>
+</html>
